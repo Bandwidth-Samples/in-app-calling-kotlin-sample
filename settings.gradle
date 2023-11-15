@@ -1,0 +1,50 @@
+pluginManagement {
+	repositories {
+		google()
+		mavenCentral()
+		gradlePluginPortal()
+	}
+}
+
+dependencyResolutionManagement {
+	repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+	repositories {
+		google()
+		mavenCentral()
+		mavenLocal()
+	}
+
+	versionCatalogs {
+		create("libs") {
+			/** Core **/
+			library("core", "androidx.core","core-ktx").version("1.9.0")
+			library("appcompat", "androidx.appcompat","appcompat").version("1.5.1")
+			library("material", "com.google.android.material","material").version("1.7.0")
+			bundle("core-bundle",[
+				"core",
+				"appcompat",
+				"material"
+			])
+			/** Networking **/
+			library("retrofit", "com.squareup.retrofit2", "retrofit").version("2.9.0")
+			library("converter-gson", "com.squareup.retrofit2","converter-gson").version("2.7.1")
+			bundle("retrofit-bundle", [
+				"retrofit",
+				"converter-gson"
+			])
+			/** Unit Testing **/
+			library("junit", "junit", "junit").version("4.13.2")
+			library("kotlin-coroutines-test", "org.jetbrains.kotlinx", "kotlinx-coroutines-test").version("1.6.4")
+			library("core-test", "androidx.arch.core", "core-testing").version("2.1.0")
+			bundle("testing-unit-bundle",[
+				"junit",
+				"kotlin-coroutines-test",
+				"core-test"
+			])
+			library("audiocodes", "audiocodes", "audiocodes").withoutVersion()
+		}
+	}
+}
+rootProject.name = "webrtc"
+include ':sample'
+include ':webrtc-legacy'

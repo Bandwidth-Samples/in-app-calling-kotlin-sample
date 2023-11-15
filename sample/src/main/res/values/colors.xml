@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bandwidthBlueDark">#0779B6</color>
+    <color name="bandwidthBlue">#079CED</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="green">#028663</color>
+    <color name="gray">#DAD9D9</color>
+    <color name="grayText">#777476</color>
+    <color name="red">#C43837</color>
+</resources>

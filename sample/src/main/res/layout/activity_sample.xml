@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:animateLayoutChanges="true"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    tools:context=".SampleActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:background="@color/bandwidthBlue"
+        android:id="@+id/toolbar"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:title="Sample App"
+        app:titleTextColor="@color/white" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/statusContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="32dp"
+        android:paddingTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+        <LinearLayout
+            android:id="@+id/action_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            tools:ignore="MissingConstraints">
+
+            <TextView
+                android:id="@+id/status_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingEnd="6dp"
+                android:text="@string/status"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/calling_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/idle"
+                android:textColor="@color/black"
+            />
+
+            <Button
+                android:id="@+id/mute_button"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/microphone"
+                android:drawableTint="@color/bandwidthBlue"
+                android:text="@string/mute"
+            />
+
+            <Button
+                android:id="@+id/hold_button"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/phone_paused"
+                android:drawableTint="@color/bandwidthBlue"
+                android:text="@string/hold" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/statusLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:padding="4dp"
+            android:text="@string/status_idle"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textColor="@color/bandwidthBlue"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/action_container" />
+
+        <TextView
+            android:visibility="invisible"
+            android:id="@+id/timer_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:padding="4dp"
+            android:text="00:00"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textColor="@color/bandwidthBlue"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/action_container" />
+
+        <TextView
+            android:id="@+id/phoneNumberBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/textview_border"
+            android:padding="8sp"
+            android:text="@string/phone_number"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            app:drawableStartCompat="@drawable/plus"
+            app:drawableTint="@color/grayText"
+            app:layout_constraintTop_toBottomOf="@id/statusLabel" />
+
+        <TextView
+            android:id="@+id/phoneNumberHelp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/hint"
+            android:textColor="@color/grayText"
+            android:textStyle="italic"
+            app:layout_constraintTop_toBottomOf="@id/phoneNumberBox" />
+
+        <TextView
+            android:id="@+id/phoneNumberLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="36sp"
+            android:visibility="invisible"
+            app:layout_constraintTop_toBottomOf="@id/statusLabel" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/statusContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial1"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                app:icon="@drawable/numeric_1"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Text"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial2"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="ABC"
+                app:icon="@drawable/numeric_2"
+                app:shapeAppearanceOverlay="@style/Button.Circle" 
+                style="@style/OutlinedButton.Text"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial3"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="DEF"
+                app:icon="@drawable/numeric_3"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Text"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial4"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="GHI"
+                app:icon="@drawable/numeric_4"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Text"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial5"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="JKL"
+                app:icon="@drawable/numeric_5"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Text"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial6"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="MNO"
+                app:icon="@drawable/numeric_6"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Text"
+            />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial7"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="PQRS"
+                app:icon="@drawable/numeric_7"
+                app:shapeAppearanceOverlay="@style/Button.Circle" 
+                style="@style/OutlinedButton.Text"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial8"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="TUV"
+                app:icon="@drawable/numeric_8"
+                app:shapeAppearanceOverlay="@style/Button.Circle" 
+                style="@style/OutlinedButton.Text"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial9"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="WXYZ"
+                app:icon="@drawable/numeric_9"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Text"
+            />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dialStar"
+                android:elevation="0dp"
+                android:layout_marginTop="-14dp"
+                android:layout_marginHorizontal="8dp"
+                android:backgroundTint="@color/white"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                app:icon="@drawable/star"
+                app:iconTint="@color/bandwidthBlue"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Icon"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/bandwidthBlue"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/dial0"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:text="+"
+                app:icon="@drawable/numeric_0"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Text"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:backgroundTint="@color/white"
+                android:id="@+id/dialPound"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginTop="-14dp"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                app:icon="@drawable/pound"
+                app:iconTint="@color/bandwidthBlue"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                app:strokeColor="@color/bandwidthBlue"
+                app:strokeWidth="2dp"
+                style="@style/OutlinedButton.Icon"
+            />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <Space
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:layout_margin="8dp"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:backgroundTint="@color/green"
+                android:id="@+id/callButton"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                android:layout_margin="8dp"
+                app:icon="@drawable/call"
+                app:iconTint="@color/white"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Icon"
+            />
+
+            <com.google.android.material.button.MaterialButton
+                android:backgroundTint="@color/white"
+                android:id="@+id/backspace"                android:layout_margin="8dp"
+                android:layout_height="80dp"
+                android:layout_width="80dp"
+                app:icon="@drawable/backspace"
+                app:iconTint="@color/gray"
+                app:shapeAppearanceOverlay="@style/Button.Circle"
+                style="@style/OutlinedButton.Icon"
+            />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Webrtc" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">@color/bandwidthBlue</item>
+        <item name="colorPrimaryVariant">@color/bandwidthBlueDark</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    </style>
+</resources>

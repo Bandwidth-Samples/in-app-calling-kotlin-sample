@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Sample</string>
+    <string name="terminate_call">Terminate call</string>
+    <string name="status_idle">Add number</string>
+    <string name="status_ringing">Calling</string>
+    <string name="status_end">End Call</string>
+    <string name="phone_number">Phone number</string>
+    <string name="hint">Add e164 number format</string>
+    <string name="hang_up">Hang up</string>
+    <string name="on_hold">On Hold</string>
+    <string name="un_hold">UnHold</string>
+    <string name="on_mute">On Mute</string>
+    <string name="un_mute">UnMute</string>
+    <string name="connected">Connected</string>
+    <string name="mute">MUTE</string>
+    <string name="ringing">Ringing</string>
+    <string name="idle">Idle</string>
+    <string name="hold">HOLD</string>
+    <string name="status">Status:</string>
+    <string name="must_not_be_empty">The phone number must not be empty</string>
+</resources>
