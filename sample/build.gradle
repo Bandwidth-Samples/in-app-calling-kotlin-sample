@@ -42,7 +42,7 @@ dependencies {
 	implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.36'
 	testImplementation(libs.bundles.testing.unit.bundle)
 
-	implementation 'com.bandwidth:webrtc:1.0.0'
+	implementation 'com.bandwidth:bandwidth-kotlin-webrtc:0.0.1'
 
 	// Add OkHttp3 dependency
 	implementation 'com.squareup.okhttp3:okhttp:4.9.1'
