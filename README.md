@@ -134,6 +134,17 @@ bandwidthSession.addSessionEventListener(object : BandwidthSessionEventListener 
     }
 })
 ```
+## Sample configuration
+```sh
+connection.header.pass                # Password for fetching token
+connection.header.user                # Username for fetching token
+connection.token                      # URL of customer webserver to fetch token
+connection.port                       # 5061
+connection.domain                     # sbc.webrtc-app.bandwidth.com (for Global) or gw.webrtc-app.bandwidth.com (for US portal)
+account.password                      # use some password or leave it empty
+account.display-name                  # Put from number/display name here
+account.username                      # put from number here
+```
 
 ## Configuring the User Agent
 
