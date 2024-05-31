@@ -1,0 +1,10 @@
+/build
+/local.properties
+.idea
+.tmp
+.gradle
+daemon
+android
+caches
+native
+wrapper/*
