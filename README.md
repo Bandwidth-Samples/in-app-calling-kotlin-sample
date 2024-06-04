@@ -47,12 +47,12 @@ Ensure that the Bandwidth libraries are part of your project's `build.gradle` fi
 
 Generate a POM file for webrtc-legacy as dependency like following:
 ```
-mvn install:install-file\
--Dfile="./webrtc-legacy/webrtcsdk-release.aar"\
--DgroupId="webrtc"\
--DartifactId="webrtc-legacy"\
--Dversion="unspecified"\
--Dpackaging="aar"\
+mvn install:install-file \
+-Dfile="./webrtc-legacy/webrtcsdk-release.aar" \
+-DgroupId="webrtc" \
+-DartifactId="webrtc-legacy" \
+-Dversion="unspecified" \
+-Dpackaging="aar" \
 -DgeneratePom="true"
 ```
 This will allow us to use dependency from mavenlocal.
