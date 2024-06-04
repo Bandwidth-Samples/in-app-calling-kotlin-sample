@@ -19,8 +19,9 @@ This guide will assist developers in integrating the `BandwidthSession` and `Ban
 ## Prerequisites
 
 - Experience with Kotlin and Android development.
-- Android Studio with the latest SDK.
+- Android Studio with the latest SDK & NDK.
 - The Bandwidth SDK integrated into your project.
+- Apache Maven to generate the pom file
 
 ## Configuration
 
@@ -46,13 +47,13 @@ Ensure that the Bandwidth libraries are part of your project's `build.gradle` fi
 
 Generate a POM file for webrtc-legacy as dependency like following:
 ```
-    mvn install:install-file \
-   -Dfile=./webrtc-legacy/webrtcsdk-release.aar \
-   -DgroupId=webrtc \
-   -DartifactId=webrtc-legacy \
-   -Dversion=unspecified \
-   -Dpackaging=aar \
-   -DgeneratePom=true
+mvn install:install-file \
+-Dfile="./webrtc-legacy/webrtcsdk-release.aar" \
+-DgroupId="webrtc" \
+-DartifactId="webrtc-legacy" \
+-Dversion="unspecified" \
+-Dpackaging="aar" \
+-DgeneratePom="true"
 ```
 This will allow us to use dependency from mavenlocal.
 
