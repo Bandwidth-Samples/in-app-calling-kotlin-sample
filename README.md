@@ -53,7 +53,7 @@ mvn install:install-file\
 -DartifactId="webrtc-legacy"\
 -Dversion="unspecified"\
 -Dpackaging="aar"\
--DgeneratePom="true"\
+-DgeneratePom="true"
 ```
 This will allow us to use dependency from mavenlocal.
 
