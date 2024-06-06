@@ -21,7 +21,7 @@ This guide will assist developers in integrating the `BandwidthSession` and `Ban
 - Experience with Kotlin and Android development.
 - Android Studio with the latest SDK & NDK.
 - The Bandwidth SDK integrated into your project.
-- Apache Maven to generate the pom file, if you don't have installed Maven in your system then [download](https://maven.apache.org/download.cgi) and [install](https://maven.apache.org/install.html) before
+- Apache Maven to generate the pom file, if you don't have installed Maven in your system then [download](https://maven.apache.org/download.cgi) and [install](https://maven.apache.org/install.html) before generating the pom file
 
 ## Configuration
 
