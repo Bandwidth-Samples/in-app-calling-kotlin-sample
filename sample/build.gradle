@@ -1,6 +1,7 @@
 plugins {
 	id 'com.android.application'
 	id 'org.jetbrains.kotlin.android'
+	id 'com.google.gms.google-services'
 }
 
 android {
@@ -49,4 +50,5 @@ dependencies {
 
 	// Add Gson dependency
 	implementation 'com.google.code.gson:gson:2.8.8'
+	implementation platform('com.google.firebase:firebase-bom:33.1.2')
 }
