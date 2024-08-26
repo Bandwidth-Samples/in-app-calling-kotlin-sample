@@ -20,6 +20,7 @@ class SampleActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySampleBinding
     private lateinit var bandwidthSession: BandwidthSession
     private val bandwidthUA = BandwidthUA()
+    private val firebaseHelper = FirebaseHelper()
 
     /**
      * Companion object containing constants related to permission requests.
@@ -58,6 +59,7 @@ class SampleActivity : AppCompatActivity() {
         uiHandler.idleState()
 
         requestMicrophonePermission()
+        firebaseHelper.fetchAndUpdateFCMToken(getString(R.string.default_user_id))
     }
 
     /**
@@ -142,8 +144,8 @@ class SampleActivity : AppCompatActivity() {
             authHeaderPassword = Util.getString("connection.header.pass", this),
             account = AccountUA(
                 username = Util.getString("account.username", this),
-                displayName =  Util.getString("account.display-name", this),
-                password =  Util.getString("account.password", this)
+                displayName = Util.getString("account.display-name", this),
+                password = Util.getString("account.password", this)
             )
         )
     }
@@ -174,12 +176,13 @@ class SampleActivity : AppCompatActivity() {
      * `RECORD_AUDIO_REQUEST_CODE`.
      */
     private fun requestMicrophonePermission() {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
+        if (ContextCompat.checkSelfPermission(
                 this,
-                arrayOf(android.Manifest.permission.RECORD_AUDIO),
-                RECORD_AUDIO_REQUEST_CODE
+                android.Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this, arrayOf(android.Manifest.permission.RECORD_AUDIO), RECORD_AUDIO_REQUEST_CODE
             )
         }
     }

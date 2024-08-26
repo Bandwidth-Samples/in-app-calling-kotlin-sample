@@ -8,3 +8,4 @@ android
 caches
 native
 wrapper/*
+/sample/google-services.json
