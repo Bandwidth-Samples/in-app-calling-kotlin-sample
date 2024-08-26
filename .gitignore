@@ -9,3 +9,4 @@ caches
 native
 wrapper/*
 /sample/google-services.json
+/sample/src/main/assets/config.properties
