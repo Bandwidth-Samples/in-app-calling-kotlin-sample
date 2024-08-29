@@ -30,6 +30,14 @@ class SampleUIHandler(
     private var connectedTimeElapsed: Int = 0
 
     /**
+     * To set the call number manually
+     * */
+
+    fun callNumber(number: String) {
+        callNumber = number
+    }
+
+    /**
      * Timer for tracking the elapsed call duration.
      * It utilizes the CountDownTimer, which ticks every second, to keep track of
      * the duration since the call has been connected. The timer counts indefinitely
@@ -47,7 +55,8 @@ class SampleUIHandler(
             connectedTimeElapsed++
 
             // Convert the elapsed time to a formatted string showing minutes and seconds.
-            val timeString = String.format("%02d:%02d", connectedTimeElapsed / 60, connectedTimeElapsed % 60)
+            val timeString =
+                String.format("%02d:%02d", connectedTimeElapsed / 60, connectedTimeElapsed % 60)
 
             // Display the formatted elapsed time in the UI.
             binding.timerLabel.text = timeString
@@ -57,7 +66,7 @@ class SampleUIHandler(
          * This method is called when the timer finishes.
          * It's currently empty as the timer is set to count indefinitely, so it won't practically finish.
          */
-        override fun onFinish() { }
+        override fun onFinish() {}
     }
 
     /**
@@ -117,8 +126,8 @@ class SampleUIHandler(
         }
 
         // Other buttons' click listeners
-        binding.dialStar.setOnClickListener {  }  // Empty block
-        binding.dialPound.setOnClickListener {  }  // Empty block
+        binding.dialStar.setOnClickListener { }  // Empty block
+        binding.dialPound.setOnClickListener { }  // Empty block
         binding.backspace.setOnClickListener { backspace() }
     }
 
@@ -332,7 +341,7 @@ class SampleUIHandler(
             connectedState()
         }
     }
-    
+
     /**
      * Updates the UI to indicate that the local audio has been reactivated after being muted.
      *
@@ -405,9 +414,15 @@ class SampleUIHandler(
     private fun setEnableButton(button: Button, onClick: (() -> Unit)? = null) {
         // Get custom colors from colors.xml file
         val (textColor, drawableColor) = if (onClick != null) {
-            Pair(ContextCompat.getColor(activity, R.color.bandwidthBlue), ContextCompat.getColor(activity, R.color.bandwidthBlue))
+            Pair(
+                ContextCompat.getColor(activity, R.color.bandwidthBlue),
+                ContextCompat.getColor(activity, R.color.bandwidthBlue)
+            )
         } else {
-            Pair(ContextCompat.getColor(activity, R.color.grayText), ContextCompat.getColor(activity, R.color.grayText))
+            Pair(
+                ContextCompat.getColor(activity, R.color.grayText),
+                ContextCompat.getColor(activity, R.color.grayText)
+            )
         }
 
         // Apply the colors to the button's text and icon

@@ -1,6 +1,9 @@
 package com.bandwidth.sample
 
 import android.content.Context
+import android.util.Log
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.IOException
 import java.util.Properties
 
@@ -36,5 +39,29 @@ object Util {
 
     fun getInt(key: String?, context: Context): Int {
         return getString(key, context).toInt()
+    }
+
+    fun capitalize(s: String?): String {
+        if (s.isNullOrEmpty()) {
+            return ""
+        }
+        val first = s[0]
+        return if (Character.isUpperCase(first)) {
+            s
+        } else {
+            first.uppercaseChar().toString() + s.substring(1)
+        }
+    }
+
+    fun mapToJson(data: Map<String?, String?>): String {
+        val obj = JSONObject()
+        data.forEach { (s: String?, s2: String?) ->
+            try {
+                obj.put(s, s2)
+            } catch (e: JSONException) {
+                Log.e("Notification", "Error while parsing", e.cause)
+            }
+        }
+        return obj.toString()
     }
 }

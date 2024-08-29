@@ -20,4 +20,6 @@
     <string name="must_not_be_empty">The phone number must not be empty</string>
     <string name="default_notification_channel_id">bandwidth-inbound-user</string>
     <string name="default_user_id">test-123</string>
+    <string name="incoming_call">incoming call...</string>
+    <string name="accept_the_call">Accept the call</string>
 </resources>

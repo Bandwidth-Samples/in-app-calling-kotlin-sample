@@ -10,18 +10,24 @@
         android:theme="@style/Theme.Webrtc"
         tools:replace="android:allowBackup,android:label">
         <activity
+            android:name=".incoming_call.IncomingCallActivity"
+            android:exported="true" />
+        <activity
             android:name=".SampleActivity"
             android:configChanges="orientation"
             android:exported="true"
+            android:launchMode="singleInstance"
             android:screenOrientation="fullSensor"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
-            android:name=".MyFirebaseMessagingService"
+            android:name=".notification.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
@@ -35,4 +41,5 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/bandwidthBlueDark" />
     </application>
+
 </manifest>
