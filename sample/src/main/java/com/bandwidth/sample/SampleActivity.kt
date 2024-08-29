@@ -1,25 +1,45 @@
 package com.bandwidth.sample
 
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bandwidth.sample.databinding.ActivitySampleBinding
+import com.bandwidth.sample.firebase.FirebaseHelper
+import com.bandwidth.sample.incoming_call.IncomingCallActivity
+import com.bandwidth.sample.incoming_call.model.IncomingPacketModel
+import com.bandwidth.sample.notification.Constants
 import com.bandwidth.webrtc.log.LogLevel
-import com.bandwidth.webrtc.session.*
+import com.bandwidth.webrtc.session.BandwidthSession
+import com.bandwidth.webrtc.session.BandwidthSessionEventListener
+import com.bandwidth.webrtc.session.CallState
+import com.bandwidth.webrtc.session.NotifyEvent
+import com.bandwidth.webrtc.session.RemoteContact
+import com.bandwidth.webrtc.session.TerminationInfo
 import com.bandwidth.webrtc.sip.enums.Transport
-import com.bandwidth.webrtc.useragent.*
+import com.bandwidth.webrtc.useragent.AccountUA
+import com.bandwidth.webrtc.useragent.BandwidthUA
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.HashMap
+
 
 /**
  * Represents the main screen where users can interact with the Bandwidth services.
  */
 class SampleActivity : AppCompatActivity() {
-
     private lateinit var binding: ActivitySampleBinding
     private lateinit var bandwidthSession: BandwidthSession
     private val bandwidthUA = BandwidthUA()
+    private val firebaseHelper = FirebaseHelper()
 
     /**
      * Companion object containing constants related to permission requests.
@@ -37,7 +57,9 @@ class SampleActivity : AppCompatActivity() {
      * Handler for managing UI changes based on different states.
      */
     private val uiHandler by lazy {
-        SampleUIHandler(this, binding, ::makeCall, ::terminateCall)
+        SampleUIHandler(this, binding, suspend {
+            makeCall(null)
+        }, ::terminateCall)
     }
 
     /**
@@ -56,14 +78,81 @@ class SampleActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         uiHandler.idleState()
-
         requestMicrophonePermission()
+        askNotificationPermission()
+        checkIfOpenedFromNotification(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        checkIfOpenedFromNotification(intent)
+    }
+
+    private fun checkIfOpenedFromNotification(intent: Intent?) {
+        if (intent?.extras != null) {
+            val incomingPacketModel = IncomingPacketModel(
+                intent.extras?.getString("accountId", ""),
+                intent.extras?.getString("applicationId", ""),
+                intent.extras?.getString("fromNo", ""),
+                intent.extras?.getString("toNo", ""),
+                intent.extras?.getString("token", "")
+            )
+
+            if (intent.extras?.getBoolean(Constants.IS_DIRECT_CALL) != null) {
+                binding.phoneNumberBox.text = incomingPacketModel.fromNo
+                uiHandler.callNumber = incomingPacketModel.fromNo
+                CoroutineScope(Dispatchers.IO).launch { makeCall(incomingPacketModel) }
+            } else {
+                val mapData = HashMap<String?, String?>()
+                mapData["accountId"] = incomingPacketModel.accountId
+                mapData["applicationId"] = incomingPacketModel.applicationId
+                mapData["fromNo"] = incomingPacketModel.fromNo
+                mapData["toNo"] = incomingPacketModel.toNo
+                mapData["token"] = incomingPacketModel.token
+
+                val incomingCallIntent = Intent(Intent.ACTION_VIEW)
+                incomingCallIntent.setClassName(packageName, IncomingCallActivity::class.java.name)
+                incomingCallIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                incomingCallIntent.putExtra(Constants.KEY_EXTRA_DATA, Util.mapToJson(mapData))
+                startActivity(incomingCallIntent)
+            }
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            firebaseHelper.fetchAndUpdateFCMToken(getString(R.string.default_user_id))
+        } else {
+            Toast.makeText(
+                this,
+                "Notification permission required to send/receive the notifications",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+
+    private fun askNotificationPermission() {
+        // This is only necessary for API level >= 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this, android.Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                firebaseHelper.fetchAndUpdateFCMToken(getString(R.string.default_user_id))
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     /**
      * Initiates a call to a specified remote contact using the Bandwidth services.
      */
-    private fun makeCall() {
+    private fun makeCall(packetModel: IncomingPacketModel?) {
         try {
             // Check if the user has provided a call number
             if (uiHandler.callNumber.isEmpty()) {
@@ -74,7 +163,7 @@ class SampleActivity : AppCompatActivity() {
             uiHandler.ringingState(block = true)
 
             // Set the configuration for Bandwidth user agent
-            setUserAgentConfig()
+            setUserAgentConfig(packetModel)
 
             // Update user agent settings before login
             bandwidthUA.setAllowHeader(null)
@@ -94,16 +183,40 @@ class SampleActivity : AppCompatActivity() {
             bandwidthSession.addSessionEventListener(object : BandwidthSessionEventListener {
                 override fun callTerminated(session: BandwidthSession?, info: TerminationInfo?) {
                     terminateCall()
+                    firebaseHelper.updateStatus(
+                        getString(R.string.default_user_id),
+                        "Idle"
+                    ) {
+                        Log.d(localClassName, "Status updated")
+                    }
                 }
 
                 override fun callProgress(session: BandwidthSession?) {
+                    firebaseHelper.updateStatus(
+                        getString(R.string.default_user_id),
+                        session?.callState?.name
+                    ) {
+                        Log.d(localClassName, "Status updated")
+                    }
                     session?.let {
                         // Update the UI based on the current call state
                         when (session.callState) {
-                            CallState.CONNECTED -> uiHandler.connectedState()
+                            CallState.CONNECTED -> {
+                                uiHandler.connectedState()
+                                firebaseHelper.updateStatus(
+                                    getString(R.string.default_user_id),
+                                    "In-Call"
+                                ) {
+                                    Log.d(localClassName, "Status updated")
+                                }
+                            }
+
                             CallState.CONNECTING -> uiHandler.connectingState(session)
                             CallState.HOLD -> uiHandler.holdState(session)
-                            CallState.RINGING -> uiHandler.ringingState()
+                            CallState.RINGING -> {
+                                uiHandler.ringingState()
+                            }
+
                             else -> {} // Handle other call states if needed
                         }
                     }
@@ -113,11 +226,19 @@ class SampleActivity : AppCompatActivity() {
             })
 
         } catch (e: Exception) {
+            e.printStackTrace()
             // Show an error message in a Snackbar if any exception occurs
             Snackbar.make(binding.root, e.message.toString(), Snackbar.LENGTH_LONG).show()
 
             // Reset the UI to its idle state in case of an error
             uiHandler.idleState()
+
+            firebaseHelper.updateStatus(
+                getString(R.string.default_user_id),
+                "Idle"
+            ) {
+                Log.d(localClassName, "Status updated")
+            }
         }
     }
 
@@ -129,23 +250,44 @@ class SampleActivity : AppCompatActivity() {
      * OAuth token URL, headers for authentication, and user account details.
      * The configuration details are fetched using utility methods.
      */
-    private fun setUserAgentConfig() {
+    private fun setUserAgentConfig(packetModel: IncomingPacketModel?) {
         bandwidthUA.setLogLevel(LogLevel.VERBOSE)
         bandwidthUA.setLogger(SampleLogger())
-        bandwidthUA.setServerConfig(
-            proxyAddress = Util.getString("connection.domain", this),
-            port = Util.getInt("connection.port", this),
-            domain = Util.getString("connection.domain", this),
-            transport = Transport.TLS,
-            oAuthTokenUrl = Util.getString("connection.token", this),
-            authHeaderUser = Util.getString("connection.header.user", this),
-            authHeaderPassword = Util.getString("connection.header.pass", this),
-            account = AccountUA(
-                username = Util.getString("account.username", this),
-                displayName =  Util.getString("account.display-name", this),
-                password =  Util.getString("account.password", this)
-            )
+        var account = AccountUA(
+            username = Util.getString("account.username", this),
+            displayName = Util.getString("account.display-name", this),
+            password = Util.getString("account.password", this)
         )
+        if (packetModel != null) {
+            account = AccountUA(
+                username = "+${packetModel.fromNo}",
+                displayName = packetModel.fromNo,
+                password = packetModel.fromNo
+            )
+            bandwidthUA.setServerConfig(
+                proxyAddress = Util.getString("connection.domain", this),
+                port = Util.getInt("connection.port", this),
+                domain = Util.getString("connection.domain", this),
+                transport = Transport.TLS,
+                oAuthTokenUrl = Util.getString("connection.token", this),
+                authHeaderUser = Util.getString("connection.header.user", this),
+                authHeaderPassword = Util.getString("connection.header.pass", this),
+                account = account
+            )
+            bandwidthUA.setOauthToken(packetModel.token)
+        } else {
+            bandwidthUA.setServerConfig(
+                proxyAddress = Util.getString("connection.domain", this),
+                port = Util.getInt("connection.port", this),
+                domain = Util.getString("connection.domain", this),
+                transport = Transport.TLS,
+                oAuthTokenUrl = Util.getString("connection.token", this),
+                authHeaderUser = Util.getString("connection.header.user", this),
+                authHeaderPassword = Util.getString("connection.header.pass", this),
+                account = account
+            )
+        }
+
     }
 
     /**
@@ -174,12 +316,12 @@ class SampleActivity : AppCompatActivity() {
      * `RECORD_AUDIO_REQUEST_CODE`.
      */
     private fun requestMicrophonePermission() {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
-            != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(
-                this,
-                arrayOf(android.Manifest.permission.RECORD_AUDIO),
-                RECORD_AUDIO_REQUEST_CODE
+                this, arrayOf(android.Manifest.permission.RECORD_AUDIO), RECORD_AUDIO_REQUEST_CODE
             )
         }
     }
