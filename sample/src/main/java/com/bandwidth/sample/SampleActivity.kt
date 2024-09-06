@@ -24,6 +24,7 @@ import com.bandwidth.webrtc.session.RemoteContact
 import com.bandwidth.webrtc.session.TerminationInfo
 import com.bandwidth.webrtc.sip.enums.Transport
 import com.bandwidth.webrtc.useragent.AccountUA
+import com.bandwidth.webrtc.useragent.AuthorizationRequest
 import com.bandwidth.webrtc.useragent.BandwidthUA
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
@@ -269,22 +270,39 @@ class SampleActivity : AppCompatActivity() {
                 port = Util.getInt("connection.port", this),
                 domain = Util.getString("connection.domain", this),
                 transport = Transport.TLS,
-                oAuthTokenUrl = Util.getString("connection.token", this),
-                authHeaderUser = Util.getString("connection.header.user", this),
-                authHeaderPassword = Util.getString("connection.header.pass", this),
-                account = account
+                account = account,
+                authorizationRequest = AuthorizationRequest(
+                    tokenUrl = Util.getString(
+                        "connection.token",
+                        this
+                    ),
+                    user = Util.getString("connection.header.user", this),
+                    pass = Util.getString("connection.header.pass", this),
+                    headers = HashMap()
+                )
             )
             bandwidthUA.setOauthToken(packetModel.token)
+            account = AccountUA(
+                username = "+${packetModel.fromNo}",
+                displayName = packetModel.fromNo,
+                password = packetModel.fromNo
+            )
         } else {
             bandwidthUA.setServerConfig(
                 proxyAddress = Util.getString("connection.domain", this),
                 port = Util.getInt("connection.port", this),
                 domain = Util.getString("connection.domain", this),
                 transport = Transport.TLS,
-                oAuthTokenUrl = Util.getString("connection.token", this),
-                authHeaderUser = Util.getString("connection.header.user", this),
-                authHeaderPassword = Util.getString("connection.header.pass", this),
-                account = account
+                account = account,
+                authorizationRequest = AuthorizationRequest(
+                    tokenUrl = Util.getString(
+                        "connection.token",
+                        this
+                    ),
+                    user = Util.getString("connection.header.user", this),
+                    pass = Util.getString("connection.header.pass", this),
+                    headers = HashMap()
+                )
             )
         }
 
