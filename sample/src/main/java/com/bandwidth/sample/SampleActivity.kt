@@ -184,7 +184,7 @@ class SampleActivity : AppCompatActivity() {
             bandwidthSession.addSessionEventListener(object : BandwidthSessionEventListener {
                 override fun callTerminated(session: BandwidthSession?, info: TerminationInfo?) {
                     terminateCall()
-                    firebaseHelper.updateStatus(
+                    firebaseHelper.setStatus(
                         getString(R.string.default_user_id),
                         "Idle"
                     ) {
@@ -260,6 +260,11 @@ class SampleActivity : AppCompatActivity() {
             password = Util.getString("account.password", this)
         )
         if (packetModel != null) {
+            account = AccountUA(
+                username = "+${packetModel.toNo}",
+                displayName = packetModel.toNo,
+                password = packetModel.toNo
+            )
             bandwidthUA.setServerConfig(
                 proxyAddress = Util.getString("connection.domain", this),
                 port = Util.getInt("connection.port", this),
