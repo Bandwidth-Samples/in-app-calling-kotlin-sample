@@ -37,7 +37,7 @@ public class FirebaseHelper {
         dataMap.put("status", "Idle");
         dataMap.put("token", token);
         dataMap.put("device", getDeviceName());
-        db.collection("agents").document(userId).set(dataMap, SetOptions.merge()).addOnSuccessListener(listener);
+        db.collection("agents").document(userId).set(dataMap).addOnSuccessListener(listener);
     }
 
     public void updateToken(String userId, String token, OnSuccessListener<Void> listener) {

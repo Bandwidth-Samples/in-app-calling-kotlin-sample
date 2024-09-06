@@ -30,8 +30,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.HashMap
-
 
 /**
  * Represents the main screen where users can interact with the Bandwidth services.
@@ -58,9 +56,7 @@ class SampleActivity : AppCompatActivity() {
      * Handler for managing UI changes based on different states.
      */
     private val uiHandler by lazy {
-        SampleUIHandler(this, binding, suspend {
-            makeCall(null)
-        }, ::terminateCall)
+        SampleUIHandler(this, binding, ::makeCall, ::terminateCall)
     }
 
     /**
@@ -82,6 +78,14 @@ class SampleActivity : AppCompatActivity() {
         requestMicrophonePermission()
         askNotificationPermission()
         checkIfOpenedFromNotification(intent)
+        initializeSDK()
+    }
+
+    private fun initializeSDK() {
+        // Set the configuration for Bandwidth user agent
+        setUserAgentConfig()
+        // Log in with the Bandwidth user agent
+        bandwidthUA.login(this)
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -102,7 +106,7 @@ class SampleActivity : AppCompatActivity() {
             if (intent.extras?.getBoolean(Constants.IS_DIRECT_CALL) != null) {
                 binding.phoneNumberBox.text = incomingPacketModel.fromNo
                 uiHandler.callNumber = incomingPacketModel.fromNo
-                CoroutineScope(Dispatchers.IO).launch { makeCall(incomingPacketModel) }
+                makeCall()
             } else {
                 val mapData = HashMap<String?, String?>()
                 mapData["accountId"] = incomingPacketModel.accountId
@@ -124,7 +128,7 @@ class SampleActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            firebaseHelper.fetchAndUpdateFCMToken(getString(R.string.default_user_id))
+            firebaseHelper.fetchAndUpdateFCMToken(Util.getString("account.username", this))
         } else {
             Toast.makeText(
                 this,
@@ -153,7 +157,7 @@ class SampleActivity : AppCompatActivity() {
     /**
      * Initiates a call to a specified remote contact using the Bandwidth services.
      */
-    private fun makeCall(packetModel: IncomingPacketModel?) {
+    private fun makeCall() {
         try {
             // Check if the user has provided a call number
             if (uiHandler.callNumber.isEmpty()) {
@@ -162,16 +166,6 @@ class SampleActivity : AppCompatActivity() {
 
             // Update the UI to show ringing state
             uiHandler.ringingState(block = true)
-
-            // Set the configuration for Bandwidth user agent
-            setUserAgentConfig(packetModel)
-
-            // Update user agent settings before login
-            bandwidthUA.setAllowHeader(null)
-            bandwidthUA.setVerifyServer(true)
-
-            // Log in with the Bandwidth user agent
-            bandwidthUA.login(this)
 
             // Create a new remote contact instance using the call number from UI handler
             val remoteContact = RemoteContact(domain = "+${uiHandler.callNumber}")
@@ -185,8 +179,7 @@ class SampleActivity : AppCompatActivity() {
                 override fun callTerminated(session: BandwidthSession?, info: TerminationInfo?) {
                     terminateCall()
                     firebaseHelper.setStatus(
-                        getString(R.string.default_user_id),
-                        "Idle"
+                        getString(R.string.default_user_id), "Idle"
                     ) {
                         Log.d(localClassName, "Status updated")
                     }
@@ -194,8 +187,7 @@ class SampleActivity : AppCompatActivity() {
 
                 override fun callProgress(session: BandwidthSession?) {
                     firebaseHelper.updateStatus(
-                        getString(R.string.default_user_id),
-                        session?.callState?.name
+                        getString(R.string.default_user_id), session?.callState?.name
                     ) {
                         Log.d(localClassName, "Status updated")
                     }
@@ -205,8 +197,7 @@ class SampleActivity : AppCompatActivity() {
                             CallState.CONNECTED -> {
                                 uiHandler.connectedState()
                                 firebaseHelper.updateStatus(
-                                    getString(R.string.default_user_id),
-                                    "In-Call"
+                                    getString(R.string.default_user_id), "In-Call"
                                 ) {
                                     Log.d(localClassName, "Status updated")
                                 }
@@ -235,8 +226,7 @@ class SampleActivity : AppCompatActivity() {
             uiHandler.idleState()
 
             firebaseHelper.updateStatus(
-                getString(R.string.default_user_id),
-                "Idle"
+                getString(R.string.default_user_id), "Idle"
             ) {
                 Log.d(localClassName, "Status updated")
             }
@@ -251,60 +241,31 @@ class SampleActivity : AppCompatActivity() {
      * OAuth token URL, headers for authentication, and user account details.
      * The configuration details are fetched using utility methods.
      */
-    private fun setUserAgentConfig(packetModel: IncomingPacketModel?) {
+    private fun setUserAgentConfig() {
         bandwidthUA.setLogLevel(LogLevel.VERBOSE)
         bandwidthUA.setLogger(SampleLogger())
-        var account = AccountUA(
+        val account = AccountUA(
             username = Util.getString("account.username", this),
             displayName = Util.getString("account.display-name", this),
             password = Util.getString("account.password", this)
         )
-        if (packetModel != null) {
-            account = AccountUA(
-                username = "+${packetModel.toNo}",
-                displayName = packetModel.toNo,
-                password = packetModel.toNo
+        val headers = HashMap<String, String>()
+        headers["grant_type"] = "client_credentials"
+        bandwidthUA.setServerConfig(
+            proxyAddress = Util.getString("connection.domain", this),
+            port = Util.getInt("connection.port", this),
+            domain = Util.getString("connection.domain", this),
+            transport = Transport.TLS,
+            account = account,
+            authorizationRequest = AuthorizationRequest(
+                tokenUrl = Util.getString(
+                    "connection.auth.url", this
+                ),
+                user = Util.getString("connection.auth.header.user", this),
+                pass = Util.getString("connection.auth.header.pass", this),
+                headers = headers
             )
-            bandwidthUA.setServerConfig(
-                proxyAddress = Util.getString("connection.domain", this),
-                port = Util.getInt("connection.port", this),
-                domain = Util.getString("connection.domain", this),
-                transport = Transport.TLS,
-                account = account,
-                authorizationRequest = AuthorizationRequest(
-                    tokenUrl = Util.getString(
-                        "connection.token",
-                        this
-                    ),
-                    user = Util.getString("connection.header.user", this),
-                    pass = Util.getString("connection.header.pass", this),
-                    headers = HashMap()
-                )
-            )
-            bandwidthUA.setOauthToken(packetModel.token)
-            account = AccountUA(
-                username = "+${packetModel.fromNo}",
-                displayName = packetModel.fromNo,
-                password = packetModel.fromNo
-            )
-        } else {
-            bandwidthUA.setServerConfig(
-                proxyAddress = Util.getString("connection.domain", this),
-                port = Util.getInt("connection.port", this),
-                domain = Util.getString("connection.domain", this),
-                transport = Transport.TLS,
-                account = account,
-                authorizationRequest = AuthorizationRequest(
-                    tokenUrl = Util.getString(
-                        "connection.token",
-                        this
-                    ),
-                    user = Util.getString("connection.header.user", this),
-                    pass = Util.getString("connection.header.pass", this),
-                    headers = HashMap()
-                )
-            )
-        }
+        )
 
     }
 
