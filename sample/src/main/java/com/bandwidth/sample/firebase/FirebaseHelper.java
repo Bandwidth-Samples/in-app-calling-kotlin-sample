@@ -15,10 +15,12 @@ import java.util.Map;
 
 public class FirebaseHelper {
     public static final String TAG = "FirebaseHelper";
+    private String token;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     public void fetchAndUpdateFCMToken(String userId) {
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
+            this.token = token;
             if (!TextUtils.isEmpty(token)) {
                 Log.d(TAG, "retrieve token successful : " + token);
                 updateTokenAndStatus(userId, token, _void -> Log.d(TAG, String.format("Token %s added for User: %s", token, userId)));
@@ -49,6 +51,14 @@ public class FirebaseHelper {
         Map<String, String> dataMap = new HashMap<>();
         dataMap.put("status", status);
         db.collection("agents").document(userId).set(dataMap, SetOptions.merge()).addOnSuccessListener(listener);
+    }
+
+    public void setStatus(String userId, String status, OnSuccessListener<Void> listener) {
+        Map<String, String> dataMap = new HashMap<>();
+        dataMap.put("status", status);
+        dataMap.put("token", token);
+        dataMap.put("device", getDeviceName());
+        db.collection("agents").document(userId).set(dataMap).addOnSuccessListener(listener);
     }
 
     public String getDeviceName() {
