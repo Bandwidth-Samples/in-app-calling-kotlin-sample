@@ -24,7 +24,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
         Log.d("MyFirebaseMessagingService", s);
-        firebaseHelper.updateToken(getApplicationContext().getString(R.string.default_user_id), s, unused -> {
+        firebaseHelper.updateToken(Util.INSTANCE.getString("account.username", this), s, unused -> {
             Log.d("MyFirebaseMessagingService", "Token updated!");
         });
     }

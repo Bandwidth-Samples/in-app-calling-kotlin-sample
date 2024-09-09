@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bandwidth.sample.R;
 import com.bandwidth.sample.SampleActivity;
+import com.bandwidth.sample.Util;
 import com.bandwidth.sample.databinding.ActivityIncomingCallBinding;
 import com.bandwidth.sample.firebase.FirebaseHelper;
 import com.bandwidth.sample.incoming_call.model.IncomingPacketModel;
@@ -56,7 +57,7 @@ public class IncomingCallActivity extends AppCompatActivity {
             }
         });
         new FirebaseHelper().updateStatus(
-                getString(R.string.default_user_id),
+                Util.INSTANCE.getString("account.username", this),
                 "Ringing",
                 unused -> {
                     Log.d(this.getClass().getName(), "Status updated");
