@@ -11,13 +11,14 @@
         tools:replace="android:allowBackup,android:label">
         <activity
             android:name=".incoming_call.IncomingCallActivity"
+            android:screenOrientation="locked"
             android:exported="true" />
         <activity
             android:name=".SampleActivity"
             android:configChanges="orientation"
             android:exported="true"
             android:launchMode="singleInstance"
-            android:screenOrientation="fullSensor"
+            android:screenOrientation="locked"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

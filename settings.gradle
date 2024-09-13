@@ -47,4 +47,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "webrtc"
 include ':sample'
-include ':webrtc-legacy'
