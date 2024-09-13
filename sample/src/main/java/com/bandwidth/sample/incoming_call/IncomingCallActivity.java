@@ -49,7 +49,6 @@ public class IncomingCallActivity extends AppCompatActivity {
                 bundle.putString("applicationId", model.getApplicationId());
                 bundle.putString("fromNo", model.getFromNo());
                 bundle.putString("toNo", model.getToNo());
-                bundle.putString("token", model.getToken());
                 bundle.putBoolean(Constants.IS_DIRECT_CALL, true);
                 intent.putExtras(bundle);
                 startActivity(intent);
@@ -87,8 +86,7 @@ public class IncomingCallActivity extends AppCompatActivity {
                         jsonObject.getString("fromNo")
                                 .replace("+", ""),
                         jsonObject.getString("toNo")
-                                .replace("+", ""),
-                        jsonObject.getString("token"));
+                                .replace("+", ""));
                 incomingCallBinding.txtNumber.setText(model.getFromNo());
             }
         } catch (JSONException e) {
