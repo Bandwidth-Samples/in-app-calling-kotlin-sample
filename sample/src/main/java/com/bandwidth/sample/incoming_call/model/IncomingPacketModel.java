@@ -8,14 +8,12 @@ public class IncomingPacketModel {
     String applicationId;
     String fromNo;
     String toNo;
-    String token;
 
-    public IncomingPacketModel(String accountId, String applicationId, String fromNo, String toNo, String token) {
+    public IncomingPacketModel(String accountId, String applicationId, String fromNo, String toNo) {
         this.accountId = accountId;
         this.applicationId = applicationId;
         this.fromNo = fromNo;
         this.toNo = toNo;
-        this.token = token;
     }
 
     public String getAccountId() {
@@ -32,17 +30,5 @@ public class IncomingPacketModel {
 
     public String getToNo() {
         return toNo;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public boolean isValid() {
-        return !TextUtils.isEmpty(accountId) &&
-                !TextUtils.isEmpty(applicationId) &&
-                !TextUtils.isEmpty(fromNo) &&
-                !TextUtils.isEmpty(toNo) &&
-                !TextUtils.isEmpty(token);
     }
 }

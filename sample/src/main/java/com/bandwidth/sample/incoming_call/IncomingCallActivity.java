@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bandwidth.sample.R;
 import com.bandwidth.sample.SampleActivity;
+import com.bandwidth.sample.Util;
 import com.bandwidth.sample.databinding.ActivityIncomingCallBinding;
 import com.bandwidth.sample.firebase.FirebaseHelper;
 import com.bandwidth.sample.incoming_call.model.IncomingPacketModel;
@@ -48,7 +49,6 @@ public class IncomingCallActivity extends AppCompatActivity {
                 bundle.putString("applicationId", model.getApplicationId());
                 bundle.putString("fromNo", model.getFromNo());
                 bundle.putString("toNo", model.getToNo());
-                bundle.putString("token", model.getToken());
                 bundle.putBoolean(Constants.IS_DIRECT_CALL, true);
                 intent.putExtras(bundle);
                 startActivity(intent);
@@ -56,7 +56,7 @@ public class IncomingCallActivity extends AppCompatActivity {
             }
         });
         new FirebaseHelper().updateStatus(
-                getString(R.string.default_user_id),
+                Util.INSTANCE.getString("account.username", this),
                 "Ringing",
                 unused -> {
                     Log.d(this.getClass().getName(), "Status updated");
@@ -86,8 +86,7 @@ public class IncomingCallActivity extends AppCompatActivity {
                         jsonObject.getString("fromNo")
                                 .replace("+", ""),
                         jsonObject.getString("toNo")
-                                .replace("+", ""),
-                        jsonObject.getString("token"));
+                                .replace("+", ""));
                 incomingCallBinding.txtNumber.setText(model.getFromNo());
             }
         } catch (JSONException e) {

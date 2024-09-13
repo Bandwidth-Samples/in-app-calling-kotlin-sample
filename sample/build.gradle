@@ -36,6 +36,7 @@ android {
 }
 
 dependencies {
+	implementation fileTree(dir: "libs", include: ["*.aar"])
 	implementation(libs.bundles.core.bundle)
 	implementation 'androidx.appcompat:appcompat:1.6.1'
 	implementation 'com.google.android.material:material:1.10.0'
@@ -45,7 +46,7 @@ dependencies {
 	implementation 'androidx.activity:activity:1.8.0'
 	testImplementation(libs.bundles.testing.unit.bundle)
 
-	implementation 'com.bandwidth:bandwidth-kotlin-webrtc:0.0.1'
+//	implementation 'webrtc:webrtc-release:0.0.2'
 
 	// Add OkHttp3 dependency
 	implementation 'com.squareup.okhttp3:okhttp:4.9.1'

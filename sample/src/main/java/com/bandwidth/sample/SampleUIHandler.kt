@@ -23,7 +23,7 @@ import kotlinx.coroutines.*
 class SampleUIHandler(
     private val activity: SampleActivity,
     private val binding: ActivitySampleBinding,
-    private val makeCallAction: suspend () -> Unit,
+    private val makeCallAction: () -> Unit,
     private val terminateCallAction: () -> Unit
 ) {
     var callNumber: String = ""
@@ -191,7 +191,7 @@ class SampleUIHandler(
                 setDisableButton(muteButton)
                 setDisableButton(holdButton)
                 callButton.setOnClickListener {
-                    CoroutineScope(Dispatchers.IO).launch { makeCallAction() }
+                    makeCallAction()
                 }
             }
         }

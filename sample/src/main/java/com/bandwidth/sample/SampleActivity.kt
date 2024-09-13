@@ -10,10 +10,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.audiocodes.mv.webrtcsdk.im.InstanceMessageStatus
+import com.audiocodes.mv.webrtcsdk.session.AudioCodesSession
+import com.audiocodes.mv.webrtcsdk.session.InfoAlert
 import com.bandwidth.sample.databinding.ActivitySampleBinding
 import com.bandwidth.sample.firebase.FirebaseHelper
 import com.bandwidth.sample.incoming_call.IncomingCallActivity
 import com.bandwidth.sample.incoming_call.model.IncomingPacketModel
+import com.bandwidth.sample.model.AuthTokenResponse
 import com.bandwidth.sample.notification.Constants
 import com.bandwidth.webrtc.log.LogLevel
 import com.bandwidth.webrtc.session.BandwidthSession
@@ -24,20 +28,33 @@ import com.bandwidth.webrtc.session.RemoteContact
 import com.bandwidth.webrtc.session.TerminationInfo
 import com.bandwidth.webrtc.sip.enums.Transport
 import com.bandwidth.webrtc.useragent.AccountUA
+import com.bandwidth.webrtc.useragent.BWACEventListener
 import com.bandwidth.webrtc.useragent.BandwidthUA
 import com.google.android.material.snackbar.Snackbar
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.HashMap
-
+import okhttp3.Credentials
+import okhttp3.FormBody
+import okhttp3.Headers
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
+import okio.IOException
+import java.util.concurrent.CompletableFuture
 
 /**
  * Represents the main screen where users can interact with the Bandwidth services.
  */
 class SampleActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivitySampleBinding
     private lateinit var bandwidthSession: BandwidthSession
+    private lateinit var userId: String
+    private lateinit var displayname: String
     private val bandwidthUA = BandwidthUA()
     private val firebaseHelper = FirebaseHelper()
 
@@ -51,15 +68,14 @@ class SampleActivity : AppCompatActivity() {
          * and in the subsequent callback to check the result of the request.
          */
         const val RECORD_AUDIO_REQUEST_CODE = 1
+        const val TAG = "SampleActivity"
     }
 
     /**
      * Handler for managing UI changes based on different states.
      */
     private val uiHandler by lazy {
-        SampleUIHandler(this, binding, suspend {
-            makeCall(null)
-        }, ::terminateCall)
+        SampleUIHandler(this, binding, ::makeCall, ::terminateCall)
     }
 
     /**
@@ -74,13 +90,47 @@ class SampleActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        userId = Util.getString("account.username", this)
+        displayname = Util.getString("account.display-name", this)
         binding = ActivitySampleBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
         uiHandler.idleState()
         requestMicrophonePermission()
         askNotificationPermission()
+        setUserAgentConfig()
         checkIfOpenedFromNotification(intent)
+    }
+
+    private fun getOAuthTokenFromUrl(
+        authUrl: String, authUser: String, authPass: String,
+    ): AuthTokenResponse? {
+        val client = OkHttpClient.Builder().build()
+
+        // Empty RequestBody for POST request without body
+        val requestBody = FormBody.Builder().add("grant_type", "client_credentials").build()
+
+        val request = Request.Builder().url(authUrl).addHeader(
+            "Authorization", Credentials.basic(authUser, authPass)
+        ).addHeader("Content-Type", "application/x-www-form-urlencoded").post(requestBody).build()
+
+        return try {
+            val response: Response = client.newCall(request).execute()
+            if (response.isSuccessful) {
+                val responseBody = response.body?.string()
+                val authToken =
+                    GsonBuilder().create().fromJson(responseBody, AuthTokenResponse::class.java)
+                authToken
+            } else {
+                Log.e(
+                    "Bandwidth",
+                    "Failed to get auth token from $authUrl ${response.code} ${response.body}"
+                )
+                null
+            }
+        } catch (e: IOException) {
+            null
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -94,21 +144,19 @@ class SampleActivity : AppCompatActivity() {
                 intent.extras?.getString("accountId", ""),
                 intent.extras?.getString("applicationId", ""),
                 intent.extras?.getString("fromNo", ""),
-                intent.extras?.getString("toNo", ""),
-                intent.extras?.getString("token", "")
+                intent.extras?.getString("toNo", "")
             )
 
             if (intent.extras?.getBoolean(Constants.IS_DIRECT_CALL) != null) {
-                binding.phoneNumberBox.text = incomingPacketModel.fromNo
-                uiHandler.callNumber = incomingPacketModel.fromNo
-                CoroutineScope(Dispatchers.IO).launch { makeCall(incomingPacketModel) }
+                binding.phoneNumberBox.text = incomingPacketModel.fromNo.replace("+", "")
+                uiHandler.callNumber = incomingPacketModel.fromNo.replace("+", "")
+                makeCall()
             } else {
                 val mapData = HashMap<String?, String?>()
                 mapData["accountId"] = incomingPacketModel.accountId
                 mapData["applicationId"] = incomingPacketModel.applicationId
                 mapData["fromNo"] = incomingPacketModel.fromNo
                 mapData["toNo"] = incomingPacketModel.toNo
-                mapData["token"] = incomingPacketModel.token
 
                 val incomingCallIntent = Intent(Intent.ACTION_VIEW)
                 incomingCallIntent.setClassName(packageName, IncomingCallActivity::class.java.name)
@@ -123,7 +171,7 @@ class SampleActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            firebaseHelper.fetchAndUpdateFCMToken(getString(R.string.default_user_id))
+            firebaseHelper.fetchAndUpdateFCMToken(userId)
         } else {
             Toast.makeText(
                 this,
@@ -141,18 +189,20 @@ class SampleActivity : AppCompatActivity() {
                     this, android.Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                firebaseHelper.fetchAndUpdateFCMToken(getString(R.string.default_user_id))
+                firebaseHelper.fetchAndUpdateFCMToken(userId)
             } else {
                 // Directly ask for the permission
                 requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
             }
+        } else {
+            firebaseHelper.fetchAndUpdateFCMToken(userId)
         }
     }
 
     /**
      * Initiates a call to a specified remote contact using the Bandwidth services.
      */
-    private fun makeCall(packetModel: IncomingPacketModel?) {
+    private fun makeCall() {
         try {
             // Check if the user has provided a call number
             if (uiHandler.callNumber.isEmpty()) {
@@ -162,68 +212,87 @@ class SampleActivity : AppCompatActivity() {
             // Update the UI to show ringing state
             uiHandler.ringingState(block = true)
 
-            // Set the configuration for Bandwidth user agent
-            setUserAgentConfig(packetModel)
-
-            // Update user agent settings before login
-            bandwidthUA.setAllowHeader(null)
-            bandwidthUA.setVerifyServer(true)
-
-            // Log in with the Bandwidth user agent
-            bandwidthUA.login(this)
-
             // Create a new remote contact instance using the call number from UI handler
-            val remoteContact = RemoteContact(domain = "+${uiHandler.callNumber}")
+            val remoteContact =
+                RemoteContact(
+                    displayName = "+${uiHandler.callNumber}",
+                    username = "+${uiHandler.callNumber}"
+                )
             remoteContact.scheme = ""
 
-            // Initiate the call using the Bandwidth user agent
-            bandwidthSession = bandwidthUA.call(callTo = remoteContact, context = this)
+            //Fetch the authorization token first before setting up the
+            // do not forgot to refresh the token as per the expiry
+            val future: CompletableFuture<AuthTokenResponse> = CompletableFuture.supplyAsync {
+                getOAuthTokenFromUrl(
+                    Util.getString(
+                        "connection.auth.url", this
+                    ), Util.getString(
+                        "connection.auth.header.user", this
+                    ), Util.getString(
+                        "connection.auth.header.pass", this
+                    )
+                )
+            }
+            val authTokenResponse = future.get()
+            if (authTokenResponse != null) {
+                // Initiate the call using the Bandwidth user agent
+                bandwidthSession = bandwidthUA.call(
+                    callTo = remoteContact,
+                    context = this,
+                    authToken = authTokenResponse.accessToken
+                )
 
-            // Add a listener to monitor the state and progress of the active call
-            bandwidthSession.addSessionEventListener(object : BandwidthSessionEventListener {
-                override fun callTerminated(session: BandwidthSession?, info: TerminationInfo?) {
-                    terminateCall()
-                    firebaseHelper.setStatus(
-                        getString(R.string.default_user_id),
-                        "Idle"
+                // Add a listener to monitor the state and progress of the active call
+                bandwidthSession.addSessionEventListener(object : BandwidthSessionEventListener {
+                    override fun callTerminated(
+                        session: BandwidthSession?, info: TerminationInfo?
                     ) {
-                        Log.d(localClassName, "Status updated")
-                    }
-                }
-
-                override fun callProgress(session: BandwidthSession?) {
-                    firebaseHelper.updateStatus(
-                        getString(R.string.default_user_id),
-                        session?.callState?.name
-                    ) {
-                        Log.d(localClassName, "Status updated")
-                    }
-                    session?.let {
-                        // Update the UI based on the current call state
-                        when (session.callState) {
-                            CallState.CONNECTED -> {
-                                uiHandler.connectedState()
-                                firebaseHelper.updateStatus(
-                                    getString(R.string.default_user_id),
-                                    "In-Call"
-                                ) {
-                                    Log.d(localClassName, "Status updated")
-                                }
-                            }
-
-                            CallState.CONNECTING -> uiHandler.connectingState(session)
-                            CallState.HOLD -> uiHandler.holdState(session)
-                            CallState.RINGING -> {
-                                uiHandler.ringingState()
-                            }
-
-                            else -> {} // Handle other call states if needed
+                        terminateCall()
+                        firebaseHelper.setStatus(
+                            userId, "Idle"
+                        ) {
+                            Log.d(localClassName, "Status updated")
                         }
                     }
-                }
 
-                override fun incomingNotify(event: NotifyEvent?, dtmfValue: String?) {}
-            })
+                    override fun callProgress(session: BandwidthSession?) {
+                        firebaseHelper.updateStatus(
+                            userId, session?.callState?.name
+                        ) {
+                            Log.d(localClassName, "Status updated")
+                        }
+                        session?.let {
+                            // Update the UI based on the current call state
+                            when (session.callState) {
+                                CallState.CONNECTED -> {
+                                    uiHandler.connectedState()
+                                    firebaseHelper.updateStatus(
+                                        userId, "In-Call"
+                                    ) {
+                                        Log.d(localClassName, "Status updated")
+                                    }
+                                }
+
+                                CallState.CONNECTING -> uiHandler.connectingState(session)
+                                CallState.HOLD -> uiHandler.holdState(session)
+                                CallState.RINGING -> {
+                                    uiHandler.ringingState()
+                                }
+
+                                else -> {} // Handle other call states if needed
+                            }
+                        }
+                    }
+
+                    override fun incomingNotify(event: NotifyEvent?, dtmfValue: String?) {}
+                })
+            } else {
+                terminateCall()
+                // Show an error message in a Snackbar if any exception occurs
+                Snackbar.make(
+                    binding.root, getString(R.string.invalid_auth_token), Snackbar.LENGTH_LONG
+                ).show()
+            }
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -234,8 +303,7 @@ class SampleActivity : AppCompatActivity() {
             uiHandler.idleState()
 
             firebaseHelper.updateStatus(
-                getString(R.string.default_user_id),
-                "Idle"
+                userId, "Idle"
             ) {
                 Log.d(localClassName, "Status updated")
             }
@@ -250,44 +318,25 @@ class SampleActivity : AppCompatActivity() {
      * OAuth token URL, headers for authentication, and user account details.
      * The configuration details are fetched using utility methods.
      */
-    private fun setUserAgentConfig(packetModel: IncomingPacketModel?) {
+    private fun setUserAgentConfig() {
         bandwidthUA.setLogLevel(LogLevel.VERBOSE)
         bandwidthUA.setLogger(SampleLogger())
-        var account = AccountUA(
+        val account = AccountUA(
             username = Util.getString("account.username", this),
             displayName = Util.getString("account.display-name", this),
             password = Util.getString("account.password", this)
         )
-        if (packetModel != null) {
-            account = AccountUA(
-                username = "+${packetModel.toNo}",
-                displayName = packetModel.toNo,
-                password = packetModel.toNo
-            )
-            bandwidthUA.setServerConfig(
-                proxyAddress = Util.getString("connection.domain", this),
-                port = Util.getInt("connection.port", this),
-                domain = Util.getString("connection.domain", this),
-                transport = Transport.TLS,
-                oAuthTokenUrl = Util.getString("connection.token", this),
-                authHeaderUser = Util.getString("connection.header.user", this),
-                authHeaderPassword = Util.getString("connection.header.pass", this),
-                account = account
-            )
-            bandwidthUA.setOauthToken(packetModel.token)
-        } else {
-            bandwidthUA.setServerConfig(
-                proxyAddress = Util.getString("connection.domain", this),
-                port = Util.getInt("connection.port", this),
-                domain = Util.getString("connection.domain", this),
-                transport = Transport.TLS,
-                oAuthTokenUrl = Util.getString("connection.token", this),
-                authHeaderUser = Util.getString("connection.header.user", this),
-                authHeaderPassword = Util.getString("connection.header.pass", this),
-                account = account
-            )
-        }
-
+        val body = HashMap<String, String>()
+        body["grant_type"] = "client_credentials"
+        bandwidthUA.setServerConfig(
+            proxyAddress = Util.getString("connection.domain", this),
+            port = Util.getInt("connection.port", this),
+            domain = Util.getString("connection.domain", this),
+            transport = Transport.TLS,
+            account = account,
+        )
+        // Log in with the Bandwidth user agent
+        bandwidthUA.login(this)
     }
 
     /**
