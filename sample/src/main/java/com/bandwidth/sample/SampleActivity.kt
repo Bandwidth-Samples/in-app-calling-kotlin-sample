@@ -10,9 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.audiocodes.mv.webrtcsdk.im.InstanceMessageStatus
-import com.audiocodes.mv.webrtcsdk.session.AudioCodesSession
-import com.audiocodes.mv.webrtcsdk.session.InfoAlert
 import com.bandwidth.sample.databinding.ActivitySampleBinding
 import com.bandwidth.sample.firebase.FirebaseHelper
 import com.bandwidth.sample.incoming_call.IncomingCallActivity
@@ -28,20 +25,13 @@ import com.bandwidth.webrtc.session.RemoteContact
 import com.bandwidth.webrtc.session.TerminationInfo
 import com.bandwidth.webrtc.sip.enums.Transport
 import com.bandwidth.webrtc.useragent.AccountUA
-import com.bandwidth.webrtc.useragent.BWACEventListener
 import com.bandwidth.webrtc.useragent.BandwidthUA
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.GsonBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import okhttp3.Credentials
 import okhttp3.FormBody
-import okhttp3.Headers
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okio.IOException
 import java.util.concurrent.CompletableFuture
@@ -102,6 +92,9 @@ class SampleActivity : AppCompatActivity() {
         checkIfOpenedFromNotification(intent)
     }
 
+    /**
+     * Fetching the authorization token for
+    * */
     private fun getOAuthTokenFromUrl(
         authUrl: String, authUser: String, authPass: String,
     ): AuthTokenResponse? {
@@ -138,6 +131,11 @@ class SampleActivity : AppCompatActivity() {
         checkIfOpenedFromNotification(intent)
     }
 
+    /**
+     * this method perform following actions when notification received
+     * 1. Open the [IncomingCallActivity] when app is in foreground
+     * 2. make the call if [SampleActivity] opened using [onNewIntent] from [IncomingCallActivity]
+     * */
     private fun checkIfOpenedFromNotification(intent: Intent?) {
         if (intent?.extras != null) {
             val incomingPacketModel = IncomingPacketModel(
@@ -167,6 +165,9 @@ class SampleActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * permission handler for push notification permission
+     */
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -181,7 +182,10 @@ class SampleActivity : AppCompatActivity() {
         }
     }
 
-
+    /**
+     * ask the push notification permission above Android 12
+     * we are using FCM here to get the notification when a inbound call initiated
+     */
     private fun askNotificationPermission() {
         // This is only necessary for API level >= 33 (TIRAMISU)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -314,8 +318,8 @@ class SampleActivity : AppCompatActivity() {
      * Configures the user agent settings for interactions with Bandwidth services.
      *
      * This function sets the log level for the user agent, initializes the logger, and
-     * configures the server details including proxy address, port, domain, transport type,
-     * OAuth token URL, headers for authentication, and user account details.
+     * configures the server details including proxy address, port,
+     * domain, transport type, user account details.
      * The configuration details are fetched using utility methods.
      */
     private fun setUserAgentConfig() {
