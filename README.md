@@ -175,7 +175,7 @@ These values should be fetched from the `config.properties` file, ensuring sensi
 
 - **Overview:** We have used two major capabilities to make the inbound call
 
-    - Call from Caller to Callee & Callback from Callee to Caller
+    - Caller to Callee & Callback from Callee to Caller
     - Bridging the both calls to connect caller and callee in a single call
 
 - **Sequence Diagram**
