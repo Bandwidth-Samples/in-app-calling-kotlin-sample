@@ -179,7 +179,7 @@ These values should be fetched from the `config.properties` file, ensuring sensi
     - Bridging the both calls to connect caller and callee in a single call
 
 - **Sequence Diagram**
-  ![InboundFLow](bandwidth-inbound-kotlin.drawio.png)
+  ![InboundFLow](bandwidth-inbound-kotlin.drawio.svg)
 
 ## Error Handling
 
