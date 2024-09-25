@@ -7,11 +7,11 @@ This guide will assist developers in integrating the `BandwidthSession` and `Ban
 - [Prerequisites](#prerequisites)
 - [Configuration](#configuration)
 - [Getting Started](#getting-started)
-  - [Dependencies](#dependencies)
-  - [Initialization](#initialization)
+    - [Dependencies](#dependencies)
+    - [Initialization](#initialization)
 - [Usage](#usage)
-  - [Making a Call](#making-a-call)
-  - [Terminating a Call](#terminating-a-call)
+    - [Making a Call](#making-a-call)
+    - [Terminating a Call](#terminating-a-call)
 - [Listeners and Implementation](#listeners-and-implementation)
 - [Configuring the User Agent](#configuring-the-user-agent)
 - [Error Handling](#error-handling)
@@ -29,14 +29,17 @@ The primary source for configurations in the Bandwidth integration is the `asset
 
 Following this template:
 ```markdown
-account.username=...
-account.display-name=...
-account.password=...
-connection.domain=...
-connection.port=...
-connection.token=...
-connection.header.user=...
-connection.header.pass=...
+#AccountUA config for client login
+account.username=xxxxxxxxx
+account.display-name=xxxxxxxxx
+account.password=xxxxxxxxx
+#BandwidthUA server config
+connection.domain=gw.webrtc-app.bandwidth.com
+connection.port=5061
+#Authrization token configs
+connection.auth.url=https://yourauthserverurl/oauth2/token
+connection.auth.header.user=xxxxxxx
+connection.auth.header.pass=xxxxxxxx
 ```
 
 ## Getting Started
@@ -70,12 +73,12 @@ Main components:
 
 Making a call using the Bandwidth services involves a series of steps to ensure the call's proper initiation and management.
 
-1. **Configuration**: 
+1. **Configuration**:
    Before making the call, extract and apply the necessary configurations from `config.properties`. This ensures that the application interacts correctly with the Bandwidth servers.
 
-2. **Authentication**: 
+2. **Authentication**:
    Authenticate your application with the Bandwidth service. This is achieved by logging in using the `bandwidthUA` instance:
-   
+
    ```kotlin
    bandwidthUA.login(this)
    ```
@@ -91,7 +94,7 @@ Making a call using the Bandwidth services involves a series of steps to ensure 
    Start the call by invoking the `call` method on the `bandwidthUA` instance:
 
    ```kotlin
-   bandwidthSession = bandwidthUA.call(remoteContact)
+   bandwidthSession = bandwidthUA.call(remoteContact, context, authToken)
    ```
 
 5. **Error Handling**:
@@ -109,7 +112,7 @@ This method is responsible for correctly signaling the termination of the call s
 
 ## Listeners and Implementation
 
-Listeners are pivotal in monitoring and responding to real-time events during the call. 
+Listeners are pivotal in monitoring and responding to real-time events during the call.
 
 In the provided code, the `BandwidthSessionEventListener` is used. This listener has multiple callback methods:
 
@@ -137,14 +140,16 @@ bandwidthSession.addSessionEventListener(object : BandwidthSessionEventListener 
 ```
 ## Sample configuration
 ```sh
-connection.header.pass                # Password for fetching token
-connection.header.user                # Username for fetching token
-connection.token                      # URL of customer webserver to fetch token
-connection.port                       # 5061
-connection.domain                     # sbc.webrtc-app.bandwidth.com (for Global) or gw.webrtc-app.bandwidth.com (for US portal)
-account.password                      # use some password or leave it empty
+account.username                      # Put from number here
 account.display-name                  # Put from number/display name here
-account.username                      # put from number here
+account.password                      # use some password or leave it empty
+#BandwidthUA server config
+connection.domain                     # sbc.webrtc-app.bandwidth.com (for Global) or gw.webrtc-app.bandwidth.com (for US portal)
+connection.port                       # 5061
+#Authrization token configs
+connection.auth.url                   # URL of customer webserver to fetch token
+connection.auth.header.user           # Username for fetching token
+connection.auth.header.pass           # Password for fetching token
 ```
 
 ## Configuring the User Agent
@@ -153,21 +158,28 @@ account.username                      # put from number here
 
 The method requires:
 
-- **Server Configurations**: 
-  - `proxyAddress`: The address of the proxy.
-  - `port`: The port number.
-  - `domain`: The domain name.
-  - `transport`: Type of transport (e.g., `Transport.TLS`).
-  - `oAuthTokenUrl`: URL for token authentication.
-  - `authHeaderUser`: User header for authentication.
-  - `authHeaderPassword`: Password header for authentication.
+- **Server Configurations**:
+    - `proxyAddress`: The address of the proxy.
+    - `port`: The port number.
+    - `domain`: The domain name.
+    - `transport`: Type of transport (e.g., `Transport.TLS`).
 
 - **Account Details**:
-  - `username`: Account's username.
-  - `displayName`: Display name associated with the account.
-  - `password`: Account's password.
+    - `username`: Account's username.
+    - `displayName`: Display name associated with the account.
+    - `password`: Account's password.
 
 These values should be fetched from the `config.properties` file, ensuring sensitive information isn't hard-coded.
+
+## Configuring Inbound Calls
+
+- **Overview:** We have used two major capabilities to make the inbound call
+
+    - Call from Caller to Callee & Callback from Callee to Caller
+    - Bridging the both calls to connect caller and callee in a single call
+
+- **Sequence Diagram**
+  ![InboundFLow](bandwidth-inbound-kotlin.drawio.svg)
 
 ## Error Handling
 
