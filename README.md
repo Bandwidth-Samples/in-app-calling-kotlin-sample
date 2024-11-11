@@ -179,9 +179,11 @@ These values should be fetched from the `config.properties` file, ensuring sensi
     - Caller to Callee & Callback from Callee to Caller
     - Bridging the both calls to connect caller and callee in a single call
 
-- **Sequence Diagram**
+- **Sequence Diagram:**
   ![InboundFLow](bandwidth-inbound-kotlin.drawio.svg)
 
+- **Notification Handler Service Sample:**
+  ![Notification Handler](https://github.com/Bandwidth-Samples/in-app-calling-inbound-demo)
 ## Error Handling
 
 Errors, especially in networked operations, are inevitable. Ensure you catch, manage, and inform users about these, fostering a seamless experience.
