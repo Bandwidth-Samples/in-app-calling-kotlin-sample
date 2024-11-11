@@ -14,6 +14,7 @@ This guide will assist developers in integrating the `BandwidthSession` and `Ban
     - [Terminating a Call](#terminating-a-call)
 - [Listeners and Implementation](#listeners-and-implementation)
 - [Configuring the User Agent](#configuring-the-user-agent)
+- [Configuring Inbound Calls](#configuring-inbound-calls)
 - [Error Handling](#error-handling)
 
 ## Prerequisites
