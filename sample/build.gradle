@@ -1,6 +1,7 @@
 plugins {
 	id 'com.android.application'
 	id 'org.jetbrains.kotlin.android'
+	id 'com.google.gms.google-services'
 }
 
 android {
@@ -35,18 +36,23 @@ android {
 }
 
 dependencies {
+//	implementation fileTree(dir: "libs", include: ["*.aar"])
 	implementation(libs.bundles.core.bundle)
 	implementation 'androidx.appcompat:appcompat:1.6.1'
 	implementation 'com.google.android.material:material:1.10.0'
 	implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 	implementation 'com.googlecode.libphonenumber:libphonenumber:8.12.36'
+    implementation('com.google.firebase:firebase-messaging')
+	implementation 'androidx.activity:activity:1.8.0'
 	testImplementation(libs.bundles.testing.unit.bundle)
 
-	implementation 'com.bandwidth:bandwidth-kotlin-webrtc:0.0.1'
+	implementation 'com.bandwidth:bandwidth-kotlin-webrtc:0.0.2'
 
 	// Add OkHttp3 dependency
 	implementation 'com.squareup.okhttp3:okhttp:4.9.1'
 
 	// Add Gson dependency
 	implementation 'com.google.code.gson:gson:2.8.8'
+	implementation platform('com.google.firebase:firebase-bom:33.2.0')
+	implementation("com.google.firebase:firebase-firestore")
 }
