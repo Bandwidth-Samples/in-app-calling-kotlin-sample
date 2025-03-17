@@ -3,22 +3,44 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-        tools:replace="android:allowBackup,android:label"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Sample"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Webrtc">
+        android:theme="@style/Theme.Webrtc"
+        tools:replace="android:allowBackup,android:label">
+        <activity
+            android:name=".incoming_call.IncomingCallActivity"
+            android:screenOrientation="locked"
+            android:exported="true" />
         <activity
             android:name=".SampleActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="true"
             android:configChanges="orientation"
-            android:screenOrientation="portrait">
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:screenOrientation="locked"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".notification.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/bandwidthBlueDark" />
     </application>
+
 </manifest>
