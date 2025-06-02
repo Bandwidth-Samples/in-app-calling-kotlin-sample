@@ -94,7 +94,7 @@ class SampleActivity : AppCompatActivity() {
 
     /**
      * Fetching the authorization token for
-    * */
+     * */
     private fun getOAuthTokenFromUrl(
         authUrl: String, authUser: String, authPass: String,
     ): AuthTokenResponse? {
@@ -257,6 +257,7 @@ class SampleActivity : AppCompatActivity() {
                         ) {
                             Log.d(localClassName, "Status updated")
                         }
+                        CallForegroundService.stopService(this@SampleActivity)
                     }
 
                     override fun callProgress(session: BandwidthSession?) {
@@ -275,6 +276,7 @@ class SampleActivity : AppCompatActivity() {
                                     ) {
                                         Log.d(localClassName, "Status updated")
                                     }
+                                    CallForegroundService.startService(this@SampleActivity)
                                 }
 
                                 CallState.CONNECTING -> uiHandler.connectingState(session)

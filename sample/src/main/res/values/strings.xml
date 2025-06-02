@@ -22,4 +22,10 @@
     <string name="incoming_call">incoming call…</string>
     <string name="accept_the_call">Accept the call</string>
     <string name="invalid_auth_token">Invalid auth token!</string>
+
+    <!--notification-->
+    <string name="notification_text_prefix">Client is </string>
+    <string name="notification_text_connected">CONNECTED</string>
+    <string name="notification_text_disconnected">DISCONNECTED</string>
+    <string name="notification_text_in_call">In call</string>
 </resources>
