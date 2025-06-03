@@ -209,7 +209,7 @@ isn't hard-coded.
 ## Call Continuity and Background Execution (Audio pause problem when backlight is off)
 
 To ensure seamless call experiences across various device states, integrate the Android's
-`MediaSessionService` ![example](https://github.com/aman-capg/in-app-calling-kotlin-sample/blob/61e558eb18276311b8646812558635d51ffd81ac/sample/src/main/java/com/bandwidth/sample/CallForegroundService.java)
+`MediaSessionService` [example](https://github.com/aman-capg/in-app-calling-kotlin-sample/blob/61e558eb18276311b8646812558635d51ffd81ac/sample/src/main/java/com/bandwidth/sample/CallForegroundService.java)
 This service allows the SDK to maintain an active media session, signaling to the system that a
 real-time communication stream is ongoing. As a result, the system is less likely to restrict or
 terminate the session during power-saving modes or when the app is running in the background. This
