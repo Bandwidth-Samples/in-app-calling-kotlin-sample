@@ -1,6 +1,7 @@
 # BandwidthSession & BandwidthUA Integration
 
-This guide will assist developers in integrating the `BandwidthSession` and `BandwidthUA` from Bandwidth services into Android applications.
+This guide will assist developers in integrating the `BandwidthSession` and `BandwidthUA` from
+Bandwidth services into Android applications.
 
 ## Table of Contents
 
@@ -22,13 +23,18 @@ This guide will assist developers in integrating the `BandwidthSession` and `Ban
 - Experience with Kotlin and Android development.
 - Android Studio with the latest SDK & NDK.
 - The Bandwidth SDK integrated into your project.
-- Apache Maven to generate the pom file, if you don't have installed Maven in your system then [download](https://maven.apache.org/download.cgi) and [install](https://maven.apache.org/install.html) before generating the pom file
+- Apache Maven to generate the pom file, if you don't have installed Maven in your system
+  then [download](https://maven.apache.org/download.cgi)
+  and [install](https://maven.apache.org/install.html) before generating the pom file
 
 ## Configuration
 
-The primary source for configurations in the Bandwidth integration is the `assets > config.properties` file. Ensure this file is populated with the necessary values before integrating.
+The primary source for configurations in the Bandwidth integration is the
+`assets > config.properties` file. Ensure this file is populated with the necessary values before
+integrating.
 
 Following this template:
+
 ```markdown
 #AccountUA config for client login
 account.username=xxxxxxxxx
@@ -50,6 +56,7 @@ connection.auth.header.pass=xxxxxxxx
 Ensure that the Bandwidth libraries are part of your project's `build.gradle` file.
 
 Generate a POM file for webrtc-legacy as dependency like following:
+
 ```
 mvn install:install-file \
 -Dfile="./webrtc-legacy/webrtcsdk-release.aar" \
@@ -59,6 +66,7 @@ mvn install:install-file \
 -Dpackaging="aar" \
 -DgeneratePom="true"
 ```
+
 This will allow us to use dependency from mavenlocal.
 
 ### Initialization
@@ -72,20 +80,24 @@ Main components:
 
 ### Making a Call
 
-Making a call using the Bandwidth services involves a series of steps to ensure the call's proper initiation and management.
+Making a call using the Bandwidth services involves a series of steps to ensure the call's proper
+initiation and management.
 
 1. **Configuration**:
-   Before making the call, extract and apply the necessary configurations from `config.properties`. This ensures that the application interacts correctly with the Bandwidth servers.
+   Before making the call, extract and apply the necessary configurations from `config.properties`.
+   This ensures that the application interacts correctly with the Bandwidth servers.
 
 2. **Authentication**:
-   Authenticate your application with the Bandwidth service. This is achieved by logging in using the `bandwidthUA` instance:
+   Authenticate your application with the Bandwidth service. This is achieved by logging in using
+   the `bandwidthUA` instance:
 
    ```kotlin
    bandwidthUA.login(this)
    ```
 
 3. **Setting the Remote Contact**:
-   Define the remote contact you intend to call. For this, use the `RemoteContact` class, and assign the desired number:
+   Define the remote contact you intend to call. For this, use the `RemoteContact` class, and assign
+   the desired number:
 
    ```kotlin
    val remoteContact = RemoteContact()
@@ -99,23 +111,28 @@ Making a call using the Bandwidth services involves a series of steps to ensure 
    ```
 
 5. **Error Handling**:
-   Implementing try-catch blocks is essential to capture and handle any exceptions that might arise during the call initiation process, providing feedback to the user as necessary.
+   Implementing try-catch blocks is essential to capture and handle any exceptions that might arise
+   during the call initiation process, providing feedback to the user as necessary.
 
 ### Terminating a Call
 
-To end an active call, you need to invoke the `terminate()` method on the `BandwidthSession` instance:
+To end an active call, you need to invoke the `terminate()` method on the `BandwidthSession`
+instance:
 
 ```kotlin
 bandwidthSession.terminate()
 ```
 
-This method is responsible for correctly signaling the termination of the call session. After invoking this method, it's a good practice to handle UI transitions and take any other post-call actions that may be necessary in your application's context.
+This method is responsible for correctly signaling the termination of the call session. After
+invoking this method, it's a good practice to handle UI transitions and take any other post-call
+actions that may be necessary in your application's context.
 
 ## Listeners and Implementation
 
 Listeners are pivotal in monitoring and responding to real-time events during the call.
 
-In the provided code, the `BandwidthSessionEventListener` is used. This listener has multiple callback methods:
+In the provided code, the `BandwidthSessionEventListener` is used. This listener has multiple
+callback methods:
 
 - `callTerminated`: Invoked when a call is terminated.
 - `callProgress`: Triggered when there's a progress update in the call.
@@ -139,7 +156,9 @@ bandwidthSession.addSessionEventListener(object : BandwidthSessionEventListener 
     }
 })
 ```
+
 ## Sample configuration
+
 ```sh
 account.username                      # Put from number here
 account.display-name                  # Put from number/display name here
@@ -155,7 +174,8 @@ connection.auth.header.pass           # Password for fetching token
 
 ## Configuring the User Agent
 
-`setUserAgentConfig` is a critical method that establishes the settings for the user agent, ensuring correct communication with Bandwidth services.
+`setUserAgentConfig` is a critical method that establishes the settings for the user agent, ensuring
+correct communication with Bandwidth services.
 
 The method requires:
 
@@ -170,7 +190,8 @@ The method requires:
     - `displayName`: Display name associated with the account.
     - `password`: Account's password.
 
-These values should be fetched from the `config.properties` file, ensuring sensitive information isn't hard-coded.
+These values should be fetched from the `config.properties` file, ensuring sensitive information
+isn't hard-coded.
 
 ## Configuring Inbound Calls
 
@@ -185,12 +206,17 @@ These values should be fetched from the `config.properties` file, ensuring sensi
 - **Notification Handler Service Sample:**
   https://github.com/Bandwidth-Samples/in-app-calling-inbound-demo
 
-
 ## Call Continuity and Background Execution (Audio pause problem when backlight is off)
 
-To ensure seamless call experiences across various device states, integrate the Android's `MediaSessionService`. This service allows the SDK to maintain an active media session, signaling to the system that a real-time communication stream is ongoing. As a result, the system is less likely to restrict or terminate the session during power-saving modes or when the app is running in the background. This approach is essential for preserving call stability and reliability, especially in scenarios where uninterrupted communication is critical.
-
+To ensure seamless call experiences across various device states, integrate the Android's
+`MediaSessionService` ![example](https://github.com/aman-capg/in-app-calling-kotlin-sample/blob/61e558eb18276311b8646812558635d51ffd81ac/sample/src/main/java/com/bandwidth/sample/CallForegroundService.java)
+This service allows the SDK to maintain an active media session, signaling to the system that a
+real-time communication stream is ongoing. As a result, the system is less likely to restrict or
+terminate the session during power-saving modes or when the app is running in the background. This
+approach is essential for preserving call stability and reliability, especially in scenarios where
+uninterrupted communication is critical.
 
 ## Error Handling
 
-Errors, especially in networked operations, are inevitable. Ensure you catch, manage, and inform users about these, fostering a seamless experience.
+Errors, especially in networked operations, are inevitable. Ensure you catch, manage, and inform
+users about these, fostering a seamless experience.
