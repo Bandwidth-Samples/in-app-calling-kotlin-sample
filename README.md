@@ -185,6 +185,12 @@ These values should be fetched from the `config.properties` file, ensuring sensi
 - **Notification Handler Service Sample:**
   https://github.com/Bandwidth-Samples/in-app-calling-inbound-demo
 
+
+## Call Continuity and Background Execution (Audio pause problem when backlight is off)
+
+To ensure seamless call experiences across various device states, integrate the Android's `MediaSessionService`. This service allows the SDK to maintain an active media session, signaling to the system that a real-time communication stream is ongoing. As a result, the system is less likely to restrict or terminate the session during power-saving modes or when the app is running in the background. This approach is essential for preserving call stability and reliability, especially in scenarios where uninterrupted communication is critical.
+
+
 ## Error Handling
 
 Errors, especially in networked operations, are inevitable. Ensure you catch, manage, and inform users about these, fostering a seamless experience.
