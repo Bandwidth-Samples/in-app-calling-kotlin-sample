@@ -212,7 +212,7 @@ To ensure seamless call experiences across various device states, integrate the 
 `MediaSessionService` [example](sample/src/main/java/com/bandwidth/sample/CallForegroundService.java)
 This service allows the SDK to maintain an active media session, signaling to the system that a
 real-time communication stream is ongoing. As a result, the system is less likely to restrict or
-terminate the session during power-saving modes or when the app is running in the background. This
+terminate/pause the session during power-saving modes or when the app is running in the background. This
 approach is essential for preserving call stability and reliability, especially in scenarios where
 uninterrupted communication is critical.
 
